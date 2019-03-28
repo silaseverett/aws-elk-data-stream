@@ -29,7 +29,7 @@ $ sudo apt-get install tmux
 git clone https://github.com/silaseverett/aws-elk-data-stream.git
 ```
 5.  Sign up for webhose and then go to your dashboard `https://webhose.io/dashboard` and scroll down to the API key. Copy it.
-6. Configure `webhose.py` with your webhose API key. Check out the [webhose API playground]([https://webhose.io/web-content-api](https://webhose.io/web-content-api)) for making the query string that fits your need. 
+6. Configure `confighose.py` with your webhose API key. Check out the [webhose API playground]([https://webhose.io/web-content-api](https://webhose.io/web-content-api)) for making the query string that fits your need. 
 ```
 $ cd webhose
 $ vi confighose.py
