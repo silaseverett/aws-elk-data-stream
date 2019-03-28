@@ -10,8 +10,9 @@ Start by following all of the steps in the AWS blog as described and then tweak 
 
 At this stage I'm assuming you have completed the above set up successfully and have:
 
-- AWS command line interface (CLI) installed on local host
-- AWS EC2 instance running
+- AWS command line interface (CLI) installed on local host.
+- AWS EC2 instance running.
+- You can see the tweets coming into your Elasticsearch instance.
 
 ## Add more social media streams
 If you have set up Twitter as per [AWS blog](https://aws.amazon.com/blogs/big-data/building-a-near-real-time-discovery-platform-with-aws/) you may want to make some tweaks and add some more social media sources.  
