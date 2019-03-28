@@ -4,16 +4,8 @@
 
 Follow this great [AWS blog](https://aws.amazon.com/blogs/big-data/building-a-near-real-time-discovery-platform-with-aws/) to get started.  It provides the source code and explains the over all architecture which looks something like this: 
 
-```mermaid
-sequenceDiagram
-Producer (EC2) ->> Firehose Kinesis: Twitter data sent through Firehose
-Producer (EC2) ->> Elasticsearch: Smaller data loads (ex: Webhose) are not persisted in S3
-Firehose Kinesis-->> S3: Firehose feeds to S3 bucket
-Lambda -> S3: Lambda is triggered when bucket is full 
-Lambda -x Elasticsearch: Data is sent to Elasticsearch instance
-Elasticsearch -x Kibana: Kibana queries Elasticsearch
-Note right of Kibana: Only Twitter data <br/>is persisted in<br/>S3 while enabling<br/>Elasticsearch to query <br/>data in real-time.
-```
+![alt text](https://raw.githubusercontent.com/silaseverett/aws-elk-data-stream/master/src/Screenshot%20from%202019-03-28%2010-16-16.png)
+
 Start by following all of the steps in the AWS blog as described and then tweak as needed. For tweaks, I found I wanted to make changes to the Elasticsearch mappings in the Twitter streamer.  Since ES mappings can be tricky, its worth checking out some other examples, e.g. my code is [here]([https://github.com/silaseverett/aws-elk-data-stream](https://github.com/silaseverett/aws-elk-data-stream)) .
 
 At this stage I'm assuming you have completed the above set up successfully and have:
