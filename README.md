@@ -59,11 +59,11 @@ $ source ~/environments/my_env/bin/activate
 ```
 $ python webhose.py
 ```
-
+The official code on webhose python client can be found [here](https://github.com/Webhose/webhoseio-python).
 
 
 ## Modifying the platform
-When you want to then modify the analytics platform you have just built start here, some basic guidance here, such as you might want to (1) enable changes to the search terms used for filtering web documents into Elasticsearch and Kibana and (2) basic maintanence of the tool in cases where it needs to be restarted.
+When you want to then modify the analytics platform you have just built here's some basic guidance. For example you might want to (1) enable changes to the search terms used for filtering web documents into Elasticsearch and Kibana and (2) basic maintanence of the tool in cases where it needs to be restarted.
  
 
 
