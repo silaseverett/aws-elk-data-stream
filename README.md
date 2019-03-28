@@ -26,12 +26,12 @@ If you have set up Twitter as per [AWS blog](https://aws.amazon.com/blogs/big-da
 
 [Webhose]('https://webhose.io/') is a great all in one almost live data source for news and blogs feed.  The steps to setting it up are:
 
-1. Login to your EC2 instance
-2. Install tmux
+1. Login to your EC2 instance.
+2. Install tmux.
 ```
 $ sudo apt-get install tmux
 ```
-4. Clone the git repo
+4. Clone this Github repo:
 ```
 git clone https://github.com/silaseverett/aws-elk-data-stream.git
 ```
@@ -63,7 +63,7 @@ $ python webhose.py
 
 
 ## Modifying the platform
-When you want someone to then modify the analytics platform you have just built start here.  These notes assume you have login permissions to AWS Cloud Services, a basic knowledge of Amazon Cloud, Twitter, Webhose.io, and command line interface commands.  The object of these instructions are to (1) enable changes to the search terms used for filtering web documents into Elasticsearch and Kibana and (2) basic maintanence of the tool in cases where it needs to be restarted.
+When you want to then modify the analytics platform you have just built start here, some basic guidance here, such as you might want to (1) enable changes to the search terms used for filtering web documents into Elasticsearch and Kibana and (2) basic maintanence of the tool in cases where it needs to be restarted.
  
 
 
@@ -93,7 +93,7 @@ then hit return
 
 3. Changes will not happen until the Twitter producer is stopped and started again.  See last section on starting and stopping the producers.
 
-### Webhose.io
+### [Webhose](webhose.io)
 1. Open the webhose directory
 ```
 $ cd webhose
@@ -161,7 +161,7 @@ and detach tmux:
 $ tmux detach
 ```
 
-### Webhose.io
+### Webhose
 #### Stopping*
 
 1.  List all the existing tmux sessions
