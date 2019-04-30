@@ -1,0 +1,220 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>building_a_streaming_analytics_platform</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><p><img src="https://drive.google.com/file/d/1NA_nTNZnuvs3CQcxQo9PU-A12IYtwn3S/view?usp=sharing" alt="sample dashboard"></p>
+<h1 id="building-a-streaming-social-media-analytics-platform">Building a Streaming Social Media Analytics Platform</h1>
+<p>I wanted to track topics across a wide range of social media platforms in real-time.  I looked around and most options were expensive and limited in scope to a few social media sources.  I found this great <a href="https://aws.amazon.com/blogs/big-data/building-a-near-real-time-discovery-platform-with-aws/">AWS blog</a> to get started.  The overall project took me 10 hrs or so end to end and viola! I had a streaming social media platform up and running.</p>
+<h2 id="setting-it-all-up">Setting it all up</h2>
+<p>The over all architecture which looks something like this:</p>
+<div class="mermaid"><svg xmlns="http://www.w3.org/2000/svg" id="mermaid-svg-SnBTyzuTfAJRV7ZR" height="100%" width="100%" style="max-width:1350px;" viewBox="-50 -10 1350 471"><g></g><g><line id="actor12" x1="75" y1="5" x2="75" y2="460" class="actor-line" stroke-width="0.5px" stroke="#999"></line><rect x="0" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="75" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="75" dy="0">Producer (EC2)</tspan></text></g><g><line id="actor13" x1="275" y1="5" x2="275" y2="460" class="actor-line" stroke-width="0.5px" stroke="#999"></line><rect x="200" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="275" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="275" dy="0">Firehose Kinesis</tspan></text></g><g><line id="actor14" x1="475" y1="5" x2="475" y2="460" class="actor-line" stroke-width="0.5px" stroke="#999"></line><rect x="400" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="475" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="475" dy="0">Elasticsearch</tspan></text></g><g><line id="actor15" x1="675" y1="5" x2="675" y2="460" class="actor-line" stroke-width="0.5px" stroke="#999"></line><rect x="600" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="675" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="675" dy="0">S3</tspan></text></g><g><line id="actor16" x1="875" y1="5" x2="875" y2="460" class="actor-line" stroke-width="0.5px" stroke="#999"></line><rect x="800" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="875" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="875" dy="0">Lambda</tspan></text></g><g><line id="actor17" x1="1075" y1="5" x2="1075" y2="460" class="actor-line" stroke-width="0.5px" stroke="#999"></line><rect x="1000" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="1075" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="1075" dy="0">Kibana</tspan></text></g><defs><marker id="arrowhead" refX="5" refY="2" markerWidth="6" markerHeight="4" orient="auto"><path d="M 0,0 V 4 L6,2 Z"></path></marker></defs><defs><marker id="crosshead" markerWidth="15" markerHeight="8" orient="auto" refX="16" refY="4"><path fill="black" stroke="#000000" stroke-width="1px" d="M 9,2 V 6 L16,4 Z" style="stroke-dasharray: 0, 0;"></path><path fill="none" stroke="#000000" stroke-width="1px" d="M 0,1 L 6,7 M 6,1 L 0,7" style="stroke-dasharray: 0, 0;"></path></marker></defs><g><text x="175" y="93" class="messageText" style="text-anchor: middle;">Twitter data sent through Firehose</text><line x1="75" y1="100" x2="275" y2="100" class="messageLine0" stroke-width="2" stroke="black" marker-end="url(#arrowhead)" style="fill: none;"></line></g><g><text x="275" y="128" class="messageText" style="text-anchor: middle;">Smaller data loads (ex: Webhose) are not persisted in S3</text><line x1="75" y1="135" x2="475" y2="135" class="messageLine0" stroke-width="2" stroke="black" marker-end="url(#arrowhead)" style="fill: none;"></line></g><g><text x="475" y="163" class="messageText" style="text-anchor: middle;">Firehose feeds to S3 bucket</text><line x1="275" y1="170" x2="675" y2="170" class="messageLine1" stroke-width="2" stroke="black" marker-end="url(#arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"></line></g><g><text x="775" y="198" class="messageText" style="text-anchor: middle;">Lambda is triggered when bucket is full</text><line x1="875" y1="205" x2="675" y2="205" class="messageLine0" stroke-width="2" stroke="black" style="fill: none;"></line></g><g><text x="675" y="233" class="messageText" style="text-anchor: middle;">Data is sent to Elasticsearch instance</text><line x1="875" y1="240" x2="475" y2="240" class="messageLine0" stroke-width="2" stroke="black" marker-end="url(#crosshead)" style="fill: none;"></line></g><g><text x="775" y="268" class="messageText" style="text-anchor: middle;">Kibana queries Elasticsearch</text><line x1="475" y1="275" x2="1075" y2="275" class="messageLine0" stroke-width="2" stroke="black" marker-end="url(#crosshead)" style="fill: none;"></line></g><g><rect x="1100" y="285" fill="#EDF2AE" stroke="#666" width="150" height="90" rx="0" ry="0" class="note"></rect><text x="1096" y="309" fill="black" class="noteText"><tspan x="1116" fill="black">Only Twitter data </tspan></text><text x="1096" y="323" fill="black" class="noteText"><tspan x="1116" fill="black">is persisted in</tspan></text><text x="1096" y="337" fill="black" class="noteText"><tspan x="1116" fill="black">S3 while enabling</tspan></text><text x="1096" y="351" fill="black" class="noteText"><tspan x="1116" fill="black">Elasticsearch to query </tspan></text><text x="1096" y="365" fill="black" class="noteText"><tspan x="1116" fill="black">data in real-time.</tspan></text></g><g><rect x="0" y="395" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="75" y="427.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="75" dy="0">Producer (EC2)</tspan></text></g><g><rect x="200" y="395" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="275" y="427.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="275" dy="0">Firehose Kinesis</tspan></text></g><g><rect x="400" y="395" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="475" y="427.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="475" dy="0">Elasticsearch</tspan></text></g><g><rect x="600" y="395" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="675" y="427.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="675" dy="0">S3</tspan></text></g><g><rect x="800" y="395" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="875" y="427.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="875" dy="0">Lambda</tspan></text></g><g><rect x="1000" y="395" fill="#eaeaea" stroke="#666" width="150" height="65" rx="3" ry="3" class="actor"></rect><text x="1075" y="427.5" dominant-baseline="central" alignment-baseline="central" class="actor" style="text-anchor: middle;"><tspan x="1075" dy="0">Kibana</tspan></text></g></svg></div>
+<p><img src="https://raw.githubusercontent.com/silaseverett/aws-elk-data-stream/master/src/Screenshot%20from%202019-03-28%2010-16-16.png" alt="alt text"></p>
+<p>Start by following all of the steps in the AWS blog as described and then tweak as needed. For tweaks, I found I wanted to make changes to the Elasticsearch mappings in the Twitter streamer.  Since ES mappings can be tricky, its worth checking out some other examples, e.g. my code is <a href="%5Bhttps://github.com/silaseverett/aws-elk-data-stream%5D(https://github.com/silaseverett/aws-elk-data-stream)">here</a> .</p>
+<p>At this stage I’m assuming you have completed the above set up successfully and have:</p>
+<ul>
+<li>AWS command line interface (CLI) installed on local host.</li>
+<li>AWS EC2 instance running.</li>
+<li>You can see the tweets coming into your Elasticsearch instance.</li>
+</ul>
+<h2 id="add-more-social-media-streams">Add more social media streams</h2>
+<p>If you have set up Twitter as per <a href="https://aws.amazon.com/blogs/big-data/building-a-near-real-time-discovery-platform-with-aws/">AWS blog</a> you may want to make some tweaks and add some more social media sources.</p>
+<p><a href="'https://webhose.io/'">Webhose</a> is a great all in one almost live data source for news and blogs feed.  The steps to setting it up are:</p>
+<ol>
+<li>Login to your EC2 instance.</li>
+<li>Install tmux.</li>
+</ol>
+<pre><code>$ sudo apt-get install tmux
+</code></pre>
+<ol start="4">
+<li>Clone this Github repo:</li>
+</ol>
+<pre><code>git clone https://github.com/silaseverett/aws-elk-data-stream.git
+</code></pre>
+<ol start="5">
+<li>Sign up for webhose and then go to your dashboard <code>https://webhose.io/dashboard</code> and scroll down to the API key. Copy it.</li>
+<li>Configure <code>confighose.py</code> with your webhose API key. Check out the <a href="%5Bhttps://webhose.io/web-content-api%5D(https://webhose.io/web-content-api)">webhose API playground</a> for making the query string that fits your need.</li>
+</ol>
+<pre><code>$ cd webhose
+$ vi confighose.py
+</code></pre>
+<p>Then paste your webhose API token.</p>
+<ol start="7">
+<li>Set up the viritual environment for the webhose producer and activate it:</li>
+</ol>
+<pre><code>$ virtualenv my_env
+</code></pre>
+<ol start="8">
+<li>Start a tmux session</li>
+</ol>
+<pre><code>$ tmux
+</code></pre>
+<ol start="9">
+<li>Activate the virtual environment and ‘(my_env)’ should be showing on the prompt:</li>
+</ol>
+<pre><code>$ source ~/environments/my_env/bin/activate
+</code></pre>
+<ol start="10">
+<li>Start the webhose producer.</li>
+</ol>
+<pre><code>(my_env) $ python webhoseio_producer.py
+</code></pre>
+<p>The official code on webhose python client used for the producer can be found <a href="https://github.com/Webhose/webhoseio-python">here</a>.</p>
+<h2 id="modifying-the-platform">Modifying the platform</h2>
+<p>When you want to then modify the analytics platform you have just built here’s some basic guidance. For example you might want to (1) enable changes to the search terms used for filtering web documents into Elasticsearch and Kibana and (2) basic maintanence of the tool in cases where it needs to be restarted.</p>
+<h2 id="task-1-modifying-search-term-filters">Task 1: Modifying Search Term Filters</h2>
+<p>Modifying the search term filters requires logging on to the EC2 instance, then stopping the message producers (Twitter and <a href="http://Webhose.io">Webhose.io</a>), opening and modifying the producer files.  So first logon to EC2 instance. Follow log on instructions above.</p>
+<h3 id="twitter"><a href="twitter.com">Twitter</a></h3>
+<ol>
+<li>Change/open directory twitter-streaming-firehose-nodejs</li>
+</ol>
+<pre><code>$ cd twitter-streaming-firehose-nodejs
+</code></pre>
+<ol start="2">
+<li>Edit the config.js file</li>
+</ol>
+<pre><code>$ vim config.js
+</code></pre>
+<p><strong>Vim</strong> is a classic if not archaic editor as you can see, but it’s the one built in to Ubuntu.  Scroll down to bottom of the file and you will see the ‘terms’.  In order to make modifications:</p>
+<pre><code>hit 'i' key for insert
+use arrow keys to navigate to the "terms" section
+make changes
+hit 'esc' then a colon ':' 
+then enter 'wq' to write to file and quit vim
+(if no changes are desired enter 'q' instead of 'wq' to exit vim)
+then hit return 
+</code></pre>
+<ol start="3">
+<li>Changes will not happen until the Twitter producer is stopped and started again.  See last section on starting and stopping the producers.</li>
+</ol>
+<h3 id="webhose"><a href="webhose.io">Webhose</a></h3>
+<ol>
+<li>Open the webhose directory</li>
+</ol>
+<pre><code>$ cd webhose
+</code></pre>
+<ol start="2">
+<li>Edit the config file ‘<a href="http://configwhose.py">configwhose.py</a>’</li>
+</ol>
+<pre><code>$ vim configwhose.py
+</code></pre>
+<p>While in vim, you’ll find the terms in the ‘query_params’ dictionary at the top of the file.  You can set the query params in accordance with <a href="https://webhose.io/web-content-api">webhose.io API playground</a> output integrate box for Python.</p>
+<p>Since we are now in Vim:</p>
+<pre><code>hit 'i' key for insert
+use arrow keys to navigate to the "query_params" at the top
+make changes
+hit 'esc' then a colon ':' 
+then enter 'wq' to write to file and quit vim
+(if no changes are desired enter 'q' instead of 'wq' to exit vim)
+then hit return 
+</code></pre>
+<ol start="3">
+<li>Changes will not happen until the webhose producer is stopped and started again.  See next section for how to stop and start the producers.</li>
+</ol>
+<h2 id="task-2--starting-and-stopping-data-producers">Task 2:  Starting and Stopping Data Producers</h2>
+<p>Log on to EC2 instance following directions above.</p>
+<h3 id="twitter-1"><a href="twitter.com">Twitter</a></h3>
+<h4 id="stopping">Stopping</h4>
+<ol>
+<li>First, list all the existing tmux sessions</li>
+</ol>
+<pre><code>$ tmux list-sessions
+</code></pre>
+<ol start="3">
+<li>Bring up the tmux session that holds the producer windows (default is only one is available).</li>
+</ol>
+<pre><code>$ tmux attach-session -t 0
+</code></pre>
+<ol start="4">
+<li>Now in tmux, toggle to the second of three stacked windows on the screen</li>
+</ol>
+<pre><code>ctrl 'b'
+hit down arrow once
+</code></pre>
+<ol start="5">
+<li>Kill the Twitter producer</li>
+</ol>
+<pre><code>ctrl 'c' 
+type 'exit'
+</code></pre>
+<h4 id="starting">Starting</h4>
+<ol>
+<li>Change/open directory ‘twitter-streaming-firehose-nodejs’</li>
+</ol>
+<pre><code>$ cd twitter-streaming-firehose-nodejs
+</code></pre>
+<ol start="2">
+<li>Run ‘twitter_stream_producer_app’ with Node.js</li>
+</ol>
+<pre><code>$ node twitter_stream_producer_app
+</code></pre>
+<ol start="3">
+<li>End the tmux session by toggling to the first window</li>
+</ol>
+<pre><code>ctrl 'b'
+then up arrow
+</code></pre>
+<p>and detach tmux:</p>
+<pre><code>$ tmux detach
+</code></pre>
+<h3 id="webhose-1">Webhose</h3>
+<h4 id="stopping-1">Stopping*</h4>
+<ol>
+<li>List all the existing tmux sessions</li>
+</ol>
+<pre><code>$ tmux list-sessions
+</code></pre>
+<ol start="3">
+<li>Bring up the tmux session that holds the producer windows (default is only one is available).</li>
+</ol>
+<pre><code>$ tmux attach-session -t 0
+</code></pre>
+<ol start="4">
+<li>Now in tmux, toggle to the second of three stacked windows on the screen</li>
+</ol>
+<pre><code>$ ctrl 'b'
+hit down arrow twice
+</code></pre>
+<ol start="4">
+<li>Kill the webhose producer (notice that webhose is running in Python2.7 virtualenv)</li>
+</ol>
+<pre><code>(my_env) $ fg %1
+(my_env) $ ctrl 'c'
+</code></pre>
+<h4 id="starting-1">Starting*</h4>
+<ol>
+<li>Go into webhose directory and run the producers py script.</li>
+</ol>
+<pre><code>(my_env) $ cd webhose 
+(my_env) $ python webhose_producer.py
+</code></pre>
+<ol start="3">
+<li>End the tmux session by toggling to the first window</li>
+</ol>
+<pre><code>ctrl 'b', then up arrow
+</code></pre>
+<p>and detach tmux:</p>
+<pre><code>$ tmux detach
+</code></pre>
+<p>***Note: the <a href="http://webhose.io">webhose.io</a> producer is run from a Python2.7 virtual environment. To activate the env</p>
+<pre><code>$ source ~/environments/my_env/bin/activate
+</code></pre>
+<p>You will see (my_env) in the front of the command prompt when activated.</p>
+<h2 id="important-urls-to-track-along-the-way">Important URLS to track along the way</h2>
+<blockquote>
+<p>CloudWatch<br>
+ElasticSearch<br>
+Kibana<br>
+S3<br>
+Lambda</p>
+</blockquote>
+</div>
+</body>
+
+</html>
